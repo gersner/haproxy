@@ -163,8 +163,8 @@ struct bind_conf {
 	char *ca_sign_file;        /* CAFile used to generate and sign server certificates */
 	char *ca_sign_pass;        /* CAKey passphrase */
 
-	X509     *ca_sign_cert;    /* CA certificate referenced by ca_file */
-	EVP_PKEY *ca_sign_pkey;    /* CA private key referenced by ca_key */
+	int ca_sign_use_chain;     /* Optionally attached the certificate chain to the served certificate */
+	struct cert_key_and_chain * ca_sign_ckch;	/* CA and possible certificate chain for ca generation */
 #endif
 	struct proxy *frontend;    /* the frontend all these listeners belong to, or NULL */
 	const struct mux_proto_list *mux_proto; /* the mux to use for all incoming connections (specified by the "proto" keyword) */

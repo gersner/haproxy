@@ -538,6 +538,18 @@ static int bind_parse_ca_sign_file(char **args, int cur_arg, struct proxy *px, s
 	return 0;
 }
 
+/* parse the "ca-sign-use-chain" bind keyword */
+static int bind_parse_ca_sign_use_chain(char **args, int cur_arg, struct proxy *px, struct bind_conf *conf, char **err)
+{
+#if (defined SSL_CTRL_SET_TLSEXT_HOSTNAME && !defined SSL_NO_GENERATE_CERTIFICATES && defined SSL_CTX_set1_chain)
+	conf->ca_sign_use_chain = 1;
+#else
+	memprintf(err, "%sthis version of openssl cannot attach certificate chain for SSL certificate generation.\n",
+		  err && *err ? *err : "");
+#endif
+	return 0;
+}
+
 /* parse the "ca-sign-pass" bind keyword */
 static int bind_parse_ca_sign_pass(char **args, int cur_arg, struct proxy *px, struct bind_conf *conf, char **err)
 {
@@ -1708,6 +1720,7 @@ static struct bind_kw_list bind_kws = { "SSL", { }, {
 	{ "ca-ignore-err",         bind_parse_ignore_err,         1 }, /* set error IDs to ignore on verify depth > 0 */
 	{ "ca-sign-file",          bind_parse_ca_sign_file,       1 }, /* set CAFile used to generate and sign server certs */
 	{ "ca-sign-pass",          bind_parse_ca_sign_pass,       1 }, /* set CAKey passphrase */
+	{ "ca-sign-use-chain",     bind_parse_ca_sign_use_chain,  1 }, /* enable attaching ca chain to generated certificate */
 	{ "ciphers",               bind_parse_ciphers,            1 }, /* set SSL cipher suite */
 #if (HA_OPENSSL_VERSION_NUMBER >= 0x10101000L)
 	{ "ciphersuites",          bind_parse_ciphersuites,       1 }, /* set TLS 1.3 cipher suite */
