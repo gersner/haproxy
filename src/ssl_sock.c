@@ -1745,6 +1745,54 @@ static int ssl_sock_advertise_alpn_protos(SSL *s, const unsigned char **out,
 #ifdef SSL_CTRL_SET_TLSEXT_HOSTNAME
 #ifndef SSL_NO_GENERATE_CERTIFICATES
 
+int ssl_sock_add_san_ext(X509V3_CTX* ctx, X509* cert, const char *servername) {
+	int failure = 0;
+	X509_EXTENSION *san_ext = NULL;
+	char *san_name = NULL;
+	CONF *conf = NULL;
+	size_t buffer_size = strlen(servername)+sizeof("DNS:");	// Includes terminator
+
+	conf = NCONF_new(NULL);
+	if (!conf) {
+		failure = 1;
+		goto cleanup;
+	}
+
+	san_name = calloc(1, buffer_size);
+	if (!san_name) {
+		failure = 1;
+		goto cleanup;
+	}
+
+	if ((buffer_size-1) != snprintf(san_name, buffer_size, "DNS:%s", servername)) {
+		failure = 1;
+		goto cleanup;
+	}
+
+	// Build an extension based on the DNS entry above
+	san_ext = X509V3_EXT_nconf_nid(conf, ctx, NID_subject_alt_name, san_name);
+	if (!san_ext) {
+		failure = 1;
+		goto cleanup;
+	}
+
+	// Add the extension
+	if (!X509_add_ext(cert, san_ext, -1 /* Add to end*/)) {
+		failure = 1;
+		goto cleanup;
+	}
+
+	// Success
+	failure = 0;
+
+cleanup:
+	if (NULL != san_ext) X509_EXTENSION_free(san_ext);
+	if (NULL != san_name) free(san_name);
+	if (NULL != conf) NCONF_free(conf);
+
+	return failure;
+}
+
 /* Create a X509 certificate with the specified servername and serial. This
  * function returns a SSL_CTX object or NULL if an error occurs. */
 static SSL_CTX *
@@ -1826,6 +1874,11 @@ ssl_sock_do_create_cert(const char *servername, struct bind_conf *bind_conf, SSL
 			goto mkcert_error;
 		}
 		X509_EXTENSION_free(ext);
+	}
+
+	/* Add SAN extension */
+	if (bind_conf->ca_sign_use_san && ssl_sock_add_san_ext(&ctx, newcrt, servername)) {
+		goto mkcert_error;
 	}
 
 	/* Sign the certificate with the CA private key */

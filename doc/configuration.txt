@@ -12140,6 +12140,14 @@ ca-sign-use-chain
   Enabling this flag will attach all public certificates encoded in `ca-sign-file`
   to the served certificate to the client, enabling trust.
 
+ca-sign-use-san
+  This setting is only available when support for OpenSSL was built in. It is
+  the CA private key passphrase. This setting is optional and used only when
+  the dynamic generation of certificates is enabled. See
+  'generate-certificates' for details.
+  Enabling this flag will add SAN extenstion of type DNS with the requested server name
+  inside the generated certificate.
+
 ca-verify-file <cafile>
   This setting designates a PEM file from which to load CA certificates used to
   verify client's certificate. It designates CA certificates which must not be

@@ -164,6 +164,7 @@ struct bind_conf {
 	char *ca_sign_pass;        /* CAKey passphrase */
 
 	int ca_sign_use_chain;     /* Optionally attached the certificate chain to the served certificate */
+	int ca_sign_use_san;       /* Optionally add SAN entry to the generated certificate */
 	struct cert_key_and_chain * ca_sign_ckch;	/* CA and possible certificate chain for ca generation */
 #endif
 	struct proxy *frontend;    /* the frontend all these listeners belong to, or NULL */
