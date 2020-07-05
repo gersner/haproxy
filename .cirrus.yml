@@ -2,7 +2,7 @@ FreeBSD_task:
   freebsd_instance:
     matrix:
       image_family: freebsd-12-1
-  only_if: $CIRRUS_BRANCH =~ 'master|next'
+  #only_if: $CIRRUS_BRANCH =~ 'master|next'
   install_script:
     - pkg update -f && pkg upgrade -y && pkg install -y openssl git gmake lua53 socat
   script:
@@ -16,7 +16,7 @@ FreeBSD_task:
 centos_6_task:
   container:
     image: centos:centos6
-  only_if: $CIRRUS_BRANCH =~ 'master|next'
+  #only_if: $CIRRUS_BRANCH =~ 'master|next'
   script:
     - yum install -q -y gcc git openssl-devel pcre-devel epel-release socat
     - yum install -q -y python34
